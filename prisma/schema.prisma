@@ -1,0 +1,99 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String            @id @unique @default(uuid())
+  email            String            @unique
+  hashedPassword   String?
+  name             String?
+  picture          String?
+  emailVerified    Boolean           @default(false)
+  verificationCode VerificationCode?
+  session          Session[]
+  accounts         OAuthAccount[]
+  websites         Website[]
+  files            UploadedFile[]
+  qaEntries        QA[]
+  passwordResetTokens PasswordResetToken[] // Relation to PasswordResetToken
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationCode {
+  id        String   @id @default(uuid())
+  code      String
+  userId    String   @unique
+  email     String
+  type      String?
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Session {
+  id           String   @id @unique @default(uuid())
+  userId       String
+  expiresAt    DateTime
+  sessionToken String?  @unique
+  accessToken  String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OAuthAccount {
+  provider       String
+  providerUserId String
+  refreshToken   String?
+  userId         String
+  user           User    @relation(fields: [userId], references: [id])
+
+  @@id([provider, providerUserId])
+}
+
+model Website {
+  id        String         @id @default(cuid())
+  url       String
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  files     UploadedFile[]
+  qaEntries QA[]
+}
+
+model UploadedFile {
+  id         String   @id @default(cuid())
+  fileName   String
+  userId     String
+  websiteId  String
+  user       User     @relation(fields: [userId], references: [id])
+  website    Website  @relation(fields: [websiteId], references: [id])
+  uploadedAt DateTime @default(now())
+}
+
+model QA {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  userId    String
+  websiteId String
+  user      User     @relation(fields: [userId], references: [id])
+  website   Website  @relation(fields: [websiteId], references: [id])
+  createdAt DateTime @default(now())
+}
+
