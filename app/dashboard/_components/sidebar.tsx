@@ -82,7 +82,7 @@ export default function Sidebar({ isOpen, setIsOpen }: any) {
           <div className="flex items-center justify-center h-16 bg-gray-100">
             <Image
               className={`h-8 ${isOpen ? "w-auto" : "w-8"}`}
-              src="/logo.svg"
+              src="/logo.png"
               alt="BotDrop AI"
               width={isOpen ? undefined : 32} 
               height={32} 

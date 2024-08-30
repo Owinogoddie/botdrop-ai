@@ -1,7 +1,8 @@
 'use server'
 import { cookies } from "next/headers"
 import { generateCodeVerifier, generateState } from "arctic"
-import { google } from "@/lib/auth"
+import { google, lucia } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
 export const getGoogleOauthConsentUrl = async () => {
     try {
@@ -25,4 +26,9 @@ export const getGoogleOauthConsentUrl = async () => {
     } catch (error) {
         return { success: false, error: 'Something went wrong' }
     }
+}
+export const logOut = async () => {
+    const sessionCookie = await lucia.createBlankSessionCookie()
+    cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+    return redirect('/authenticate')
 }

@@ -1,4 +1,6 @@
 'use client'
+import { useAuth } from '@/lib/auth-client';
+import Link from 'next/link';
 import React, { useEffect, useRef } from 'react'
 
 interface Particle {
@@ -10,7 +12,11 @@ interface Particle {
   color: string;
   followMouse: boolean;
 }
-
+type User = {
+  name: string | null;
+  email: string;
+  picture: string | null;
+};
 export default function Hero(): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
@@ -107,6 +113,7 @@ export default function Hero(): JSX.Element {
     }
   }, [])
 
+  const { user, loading } = useAuth() as { user: User | null, loading: boolean };
   return (
     <section className="relative bg-gradient-to-b from-primary to-secondary text-white py-20">
       <canvas
@@ -122,9 +129,19 @@ export default function Hero(): JSX.Element {
           <p className="text-xl md:text-2xl mb-8">
             The All-in-One Chatbot Solution for Lead Generation, Consulting, and Customer Support
           </p>
-          <button className="bg-white text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition duration-300">
-            Get Started for Free
-          </button>
+          {loading ? (
+            <div className="inline-block">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+            </div>
+          ) : user ? (
+            <Link href="/dashboard" className="bg-white text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition duration-300 inline-block">
+              Go to Dashboard
+            </Link>
+          ) : (
+            <Link href="/signup" className="bg-white text-primary px-8 py-3 rounded-full text-lg font-semibold hover:bg-opacity-90 transition duration-300 inline-block">
+              Get Started for Free
+            </Link>
+          )}
         </div>
       </div>
     </section>
