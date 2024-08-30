@@ -2,16 +2,16 @@ import { NextResponse } from "next/server";
 import { generateVerificationCode } from "@/lib/auth";
 import { sendVerificationEmail } from "@/lib/mailer";
 import prisma from "@/lib/db";
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 
 export async function POST(request: Request) {
-  const { email, password } = await request.json();
-  
-  if (!email || !password) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
-  }
-
   try {
+    const { email, password } = await request.json();
+
+    if (!email || !password) {
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+
     // Check if the user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -21,8 +21,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 });
     }
 
-    // Hash the password using argon2id
-    const hashedPassword = await bcrypt.hash(password,10);
+    // Hash the password using bcrypt
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate verification code
     const verificationCode = generateVerificationCode();
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     // Send verification email
     await sendVerificationEmail(email, verificationCode);
 
-    return NextResponse.json({ message: "User created. Please check your email for the verification code." });
+    return NextResponse.json({ message: "User created. Please check your email for the verification code." }, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "An error occurred" }, { status: 500 });
